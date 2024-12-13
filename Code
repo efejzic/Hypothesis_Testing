@@ -1,1 +1,250 @@
+- Data
 
+Extract population A and assign variable names:
+
+> HEMOGLOB <- read_excel("C:/Users/efejz/Downloads/LDS_C07_HEMOGLOB.xlsx")
+> view(HEMOGLOB)
+> tA <- data.frame(HEMOGLOB$A,HEMOGLOB$Hb_A)
+> names(tA) <- c("A", "Hb_A")
+> view(tA)
+
+Extract population B and assign variable names:
+
+> tB <- data.frame(HEMOGLOB$B,HEMOGLOB$Hb_B)
+> names(tB) <- c("B", "Hb_B")
+> view (tB)
+
+Generate SRS 80 from each:
+
+> tSA <- tA %>% slice_sample(replace=FALSE,n=80)
+> tSB <- tB %>% slice_sample(replace=FALSE,n=80)
+> view(tSA)
+> view(tSB)
+
+Combine the two populations SRS 80:
+
+> tH <- data.frame(tSA,tSB)
+> view(tH)
+
+First 80 records from HEMOGLOB dataframe:
+
+> HEMOGLOB <- head(HEMOGLOB, 80)
+> HEMOGLOB_subset <- head (HEMOGLOB, 80)
+> view(HEMOGLOB_subset)
+
+Merging dataframe HEMOGLOB_subset and tH:
+
+> HEMOGLOB_SRS80 <- cbind(HEMOGLOB_subset, tH)
+> view(HEMOGLOB_SRS80)
+
+Renaming headers that got changed in the merger:
+
+> old_column_indices <- c(1, 2, 3, 4)
+> new_column_names <- c("A", "Hb_A", "B", "Hb_B")
+> colnames(HEMOGLOB_SRS80)[old_column_indices] <- new_column_names
+> view(HEMOGLOB_SRS80)
+> old_column_indices <- c(5, 6, 7, 8)
+> new_column_names <- c("A_S", "Hb_A_S", "B_S", "Hb_B_S")
+> colnames(HEMOGLOB_SRS80)[old_column_indices] <- new_column_names
+> view(HEMOGLOB_SRS80)
+
+- Descriptive Statistics
+
+_________Population Hb_A_S
+
+> summary(Hb_A_S)
+
+Min. 1st Qu. Median Mean 3rd Qu. Max.
+2.600 5.575 6.900 7.275 8.025 50.000
+
+> describe(Hb_A_S,interp=TRUE,ranges=FALSE,quant=c(.25,.50,.75),IQR = TRUE,
++ fast=FALSE,na.rm = TRUE)
+
+vars n mean sd skew kurtosis se IQR Q0.25 Q0.5 Q0.75
+X1 1 80 7.28 5.16 7.05 55.68 0.58 2.45 5.57 6.9 8.03
+
+> conf_interval_mean <- t.test(HEMOGLOB_SRS80$Hb_A_S)$conf.int
+> cat("95% Confidence Interval for Mean:", conf_interval_mean, "\n")
+
+95% Confidence Interval for Mean: 6.126074 8.423926
+
+> median_fun <- function(x, i) median(x[i])
+> bootstrap_results <- boot(HEMOGLOB_SRS80$Hb_A_S, statistic = median_fun, R = 80)
+> conf_interval_median <- quantile(bootstrap_results$t, c(0.025, 0.975))
+> cat("95% Confidence Interval for Median:", conf_interval_median, "\n")
+
+95% Confidence Interval for Median: 6.2975 7.3
+
+> sd_fun <- function(x, i) sd(x[i])
+> bootstrap_results_sd <- boot(HEMOGLOB_SRS80$Hb_A_S, statistic = sd_fun, R = 80)
+> conf_interval_sd <- quantile(bootstrap_results_sd$t, c(0.025, 0.975))
+> cat("95% Confidence Interval for Standard Deviation:", conf_interval_sd, "\n")
+
+95% Confidence Interval for Standard Deviation: 1.619914 8.498653
+
+_________Population Hb_B_S
+
+> summary(Hb_B_S)
+
+Min. 1st Qu. Median Mean 3rd Qu. Max.
+2.40 11.85 12.90 12.77 14.00 16.90
+
+> describe(Hb_B_S,interp=TRUE,ranges=FALSE,quant=c(.25,.50,.75),IQR = TRUE,
++ fast=FALSE,na.rm = TRUE)
+
+vars n mean sd skew kurtosis se IQR Q0.25 Q0.5 Q0.75
+X1 1 80 12.77 1.97 -1.74 7.66 0.22 2.15 11.85 12.9 14
+
+> conf_interval_mean <- t.test(HEMOGLOB_SRS80$Hb_B_S)$conf.int
+> cat("95% Confidence Interval for Mean:", conf_interval_mean, "\n")
+
+95% Confidence Interval for Mean: 12.32976 13.20774
+
+> median_fun <- function(x, i) median(x[i])
+> bootstrap_results <- boot(HEMOGLOB_SRS80$Hb_B_S, statistic = median_fun, R = 80)
+> conf_interval_median <- quantile(bootstrap_results$t, c(0.025, 0.975))
+> cat("95% Confidence Interval for Median:", conf_interval_median, "\n")
+
+95% Confidence Interval for Median: 12.4 13.55125
+
+> sd_fun <- function(x, i) sd(x[i])
+> bootstrap_results_sd <- boot(HEMOGLOB_SRS80$Hb_B_S, statistic = sd_fun, R = 80)
+> conf_interval_sd <- quantile(bootstrap_results_sd$t, c(0.025, 0.975))
+> cat("95% Confidence Interval for Standard Deviation:", conf_interval_sd, "\n")
+
+95% Confidence Interval for Standard Deviation: 1.439648 2.398305
+
+- Graphic Representations
+
+_________Population Hb_A_S
+
+> hist(HEMOGLOB_SRS80$Hb_A_S, breaks = 30, main = "Histogram for Hb_A_S", xlab = "Values"
+> hist(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers, breaks = 30, main = "Histogram for Hb_A_S", xlab = "Values")
+> describe(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers, interp=TRUE,ranges=FALSE,quant=c(.25,.50,.75), IQR=TRUE,
++ fast=FALSE, na.rm=TRUE)
+
+vars n mean sd skew kurtosis se IQR Q0.25 Q0.5 Q0.75
+X1 1 78 6.73 1.83 0.12 0.14 0.21 2.45 5.53 6.9 7.97
+
+_________Population Hb_B_S
+
+> hist(HEMOGLOB_SRS80$Hb_B_S, breaks = 30, main = "Histogram for Hb_B_S", xlab = "Values")
+> hist(HEMOGLOB_SRS80_filtered$Hb_B_S, breaks = 30, main = "Histogram for Hb_B_S", xlab = "Values")
+> describe(HEMOGLOB_SRS80_filtered$Hb_B_S,interp=TRUE,ranges=FALSE,quant=c(.25,.50,.75),IQR = TRUE,
++ fast=FALSE,na.rm = TRUE)
+
+vars n mean sd skew kurtosis se IQR Q0.25 Q0.5 Q0.75
+X1 1 78 12.88 1.59 -0.08 -0.33 0.18 2.05 11.9 12.9 13.95
+
+- Population Hb_A_S and Hb_B_S side by side
+
+> data_long <- data.frame(
++ value = c(HEMOGLOB_SRS80$Hb_A_S, HEMOGLOB_SRS80$Hb_B_S),
++ group = rep(c("Hb_A_S", "Hb_B_S"), each = length(HEMOGLOB_SRS80$Hb_A_S))
++ )
+> ggplot(data_long, aes(x = value, fill = group)) +
++ geom_histogram(position = "dodge", bins = 30, color = "white", alpha = 0.7) +
++ labs(title = "Side-by-Side Histogram for Hb_A_S and Hb_B_S", x = "Values", fill = "Group")
+
+- Without outliers
+
+> data_long <- data.frame(
++ value = c(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers, HEMOGLOB_SRS80_filtered$Hb_B_S),
++ group = rep(c("Hb_A_S_no_outliers", "Hb_B_S"), times = c(length(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers), length(HEMOGLOB_SRS80_filtered$Hb_B_S)))
++ )
+> ggplot(data_long, aes(x = value, fill = group)) +
++ geom_histogram(position = "dodge", bins = 30, color = "white", alpha = 0.7) +
++ labs(title = "Side-by-Side Histogram for Hb_A_S and Hb_B_S", x = "Values", fill = "Group")
+
+- Box Plots
+
+> data_long <- data.frame(
++ value = c(HEMOGLOB_SRS80$Hb_A_S, HEMOGLOB_SRS80$Hb_B_S),
++ group = rep(c("Hb_A_S", "Hb_B_S"), each = length(HEMOGLOB_SRS80$Hb_A_S))
++ )
+> ggplot(data_long, aes(x = group, y = value, fill = group)) +
++ geom_boxplot() +
++ labs(title = "Side-by-Side Boxplot for Hb_A_S and Hb_B_S", x = "Group", y = "Values", fill = "Group")
+
+- Without outliers
+
+> data_long <- data.frame(
++ value = c(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers, HEMOGLOB_SRS80_filtered$Hb_B_S),
++ group = rep(c("Hb_A_S", "Hb_B_S"), each = length(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers))
++ )
+> ggplot(data_long, aes(x = group, y = value, fill = group)) +
++ geom_boxplot() +
++ labs(title = "Side-by-Side Boxplot for Hb_A_S and Hb_B_S", x = "Group", y = "Values", fill = "Group")
+
+- Scatter Plots
+
+> plot(Hb_A_S)
+> plot(Hb_B_S)
+
+- Population outliers excluded:
+
+> summary(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers)
+
+Min. 1st Qu. Median Mean 3rd Qu. Max.
+2.600 5.525 6.900 6.727 7.975 11.900
+
+> summary(HEMOGLOB_SRS80_filtered$Hb_B_S)
+
+Min. 1st Qu. Median Mean 3rd Qu. Max.
+9.30 11.90 12.90 12.88 13.95 16.90
+
+> plot(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers, xlab = "Index", ylab = "Hb_A_S", main = "Scatterplot Without Outlier for Hb_A_S")
+> plot(HEMOGLOB_SRS80_filtered$Hb_B_S, xlab = "Index", ylab = "Hb_B_S", main = "Scatterplot Without Outlier for Hb_B_S")
+
+- Grubbs Test
+
+_________Population Hb_A_S
+
+First Test
+> grubbs.test(Hb_A_S)
+
+Second Test
+Removal of highest outlier – 50
+
+> HEMOGLOB_SRS80$Hb_A_S[HEMOGLOB_SRS80$Hb_A_S == 50] <- NA
+> HEMOGLOB_SRS80_filtered <- HEMOGLOB_SRS80 %>%
++ filter(!is.na(Hb_A_S)) %>%
++ select(everything())
+> print(HEMOGLOB_SRS80_filtered)
+> grubbs.test(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers)
+
+_________Population Hb_B_S
+
+First Test
+> grubbs.test(Hb_B_S)
+
+Second Test
+Removal of lowest outlier – 2.4
+
+> HEMOGLOB_SRS80$Hb_B_S[HEMOGLOB_SRS80$Hb_B_S == 2.4] <- NA
+> HEMOGLOB_SRS80_filtered <- HEMOGLOB_SRS80 %>%
++ filter(!is.na(Hb_B_S)) %>%
++ select(everything())
+> print(HEMOGLOB_SRS80_filtered)
+> grubbs.test(HEMOGLOB_SRS80_filtered$Hb_B_S)
+
+- 95 percent CI: Hb_A_S and Hb_B_S - Outliers excluded:
+
+_________Population Hb_A_S
+
+> t.test(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers)$conf.int
+[1] 6.315132 7.138714
+attr(,"conf.level")
+[1] 0.95
+
+_________Population Hb_B_S
+
+> t.test(HEMOGLOB_SRS80_filtered$Hb_B_S)$conf.int
+[1] 12.51789 13.23596
+attr(,"conf.level")
+[1] 0.95
+
+- Two-Sample T-Test and CI: Hb_A_S, Hb_B_S
+
+Welch Two Sample t-test data:
+> t.test(HEMOGLOB_SRS80_filtered$Hb_A_S_no_outliers, HEMOGLOB_SRS80_filtered$Hb_B_S, var.equal = FALSE)
